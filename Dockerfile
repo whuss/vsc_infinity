@@ -1,8 +1,13 @@
-ARG VARIANT="3.6"
-FROM mcr.microsoft.com/vscode/devcontainers/python:0-${VARIANT}
+FROM rust:1.48 as builder
 
-# [Option] Install Node.js
+WORKDIR /src
 
+RUN cargo install tokei bat ytop dutree procs \
+    && cargo install -f --git https://github.com/jez/as-tree
+
+FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.6
+
+# Install Node.js
 ARG INSTALL_NODE="true"
 ARG NODE_VERSION="lts/*"
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"
@@ -25,3 +30,15 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g eslint" 2>&1
 
 RUN pipx install poetry
+
+# install starship
+ADD https://starship.rs/install.sh install.sh
+RUN chmod a+x install.sh && ./install.sh --yes && rm install.sh
+
+# copy tools from builder stage
+COPY --from=builder /usr/local/cargo/bin/tokei /usr/local/bin
+COPY --from=builder /usr/local/cargo/bin/bat /usr/local/bin
+COPY --from=builder /usr/local/cargo/bin/ytop /usr/local/bin
+COPY --from=builder /usr/local/cargo/bin/dutree /usr/local/bin
+COPY --from=builder /usr/local/cargo/bin/procs /usr/local/bin
+COPY --from=builder /usr/local/cargo/bin/as-tree /usr/local/bin
