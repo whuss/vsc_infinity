@@ -1,0 +1,4 @@
+virtualenvwrapper
+ipython==7.16.1
+ipykernel==5.4.2
+nbconvert==6.0.7

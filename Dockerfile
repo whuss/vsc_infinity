@@ -20,8 +20,9 @@ RUN chown vscode:vscode /home/vscode/.tmux.conf
 COPY bashrc /home/vscode
 RUN cat /home/vscode/bashrc >> /home/vscode/.bashrc && rm /home/vscode/bashrc
 
-# Install virtualenvwrapper
-RUN pip3 --disable-pip-version-check --no-cache-dir install virtualenvwrapper
+# Install python requirements
+COPY requirements.txt ./
+RUN pip3 --disable-pip-version-check --no-cache-dir install -r requirements.txt && rm requirements.txt
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends git-lfs cmake libgl1-mesa-glx tmux ripgrep fd-find exa fzf
